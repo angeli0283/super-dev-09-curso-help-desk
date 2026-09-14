@@ -1,4 +1,4 @@
-
+import bcrypt
 
 
 # GEra um salt aleatorio e cria o hash seguro da senha usando bcrypt
