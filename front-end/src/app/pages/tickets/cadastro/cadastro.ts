@@ -1,9 +1,81 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { TicketCadastro } from '../../../models/tickets.model';
+import { FormsModule } from '@angular/forms';
+import { TicketService } from '../../../services/ticket.service';
+import { Router, RouterLink } from '@angular/router';
+import { UsuarioService } from '../../../services/usuario.service';
+import { UsuarioResposta } from '../../../models/usuarios.model';
 
 @Component({
   selector: 'app-cadastro',
-  imports: [],
+  imports: [FormsModule, RouterLink],
   templateUrl: './cadastro.html',
   styleUrl: './cadastro.scss',
 })
-export class Cadastro {}
+export class Cadastro {
+  ticketService = inject(TicketService);
+  usuarioService = inject(UsuarioService);
+  router = inject(Router);
+
+  usuarios = signal<UsuarioResposta[]>([]);
+
+  
+
+  setores = [
+    {
+      "titulo": "TI",
+      "descricao": "TI"
+    },
+    {
+      "titulo": "RH",
+      "descricao": "Recursos Humanos"
+    },
+    {
+      "titulo": "FINANCEIRO",
+      "descricao": "Financeiro"
+    },
+    {
+      "titulo": "ADMINISTRATIVO",
+      "descricao": "Administrativo"
+    },
+    {
+      "titulo": "MANUTENCAO",
+      "descricao": "Manutenção"
+    }
+  ]
+
+  ticket: TicketCadastro = {
+    descricao: "",
+    idUsuario: null,
+    setor: "",
+    titulo: ""
+  }
+
+  ngOnInit() {
+    this.carregarUsuarios();
+  }
+
+  carregarUsuarios() {
+    this.usuarioService.listar().subscribe({
+      next: usuarios => this.usuarios.set(usuarios),
+      error: erro => {
+        console.error(erro);
+        alert("Não foi possível carregar os usuários");
+      }
+    })
+  }
+
+  cadastrar() {
+    // chamar o service que fará a request para a api cadastrar o ticket  
+    this.ticketService.cadastrar(this.ticket).subscribe({
+      next: () => {
+        alert("Ticktet cadastrado com sucesso!");
+        this.router.navigate(['/tickets']);
+      },
+      error: erro => {
+        console.error(erro);
+        alert("Não fo possível cadastrar o ticket");
+      }
+    })
+  }
+}
